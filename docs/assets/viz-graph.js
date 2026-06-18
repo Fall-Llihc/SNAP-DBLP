@@ -13,12 +13,26 @@
   }
   function labelBg(){ return isDark() ? 'rgba(17,24,39,0.85)' : 'rgba(255,255,255,0.85)'; }
 
-  function buildSim(nodes, links, w, h){
+  // Data riil (DBLP XML) jauh lebih padat daripada data sintetis lama (avg
+  // degree puluhan, bukan sekitar 5). Menggambar SEMUA edge pada subgraf
+  // padat membuat layout jadi gumpalan abu-abu solid yang menutupi titik
+  // node — terlihat seperti "komunitas tidak muncul". Edge dibatasi acak
+  // demi keterbacaan; node TIDAK pernah dikurangi, hanya garis koneksinya
+  // yang disampling untuk digambar.
+  const MAX_RENDER_EDGES = 1500;
+  function sampleEdges(pool){
+    if(pool.length<=MAX_RENDER_EDGES) return pool;
+    const arr=pool.slice();
+    for(let i=arr.length-1;i>0;i--){ const j=(Math.random()*(i+1))|0; const t=arr[i]; arr[i]=arr[j]; arr[j]=t; }
+    return arr.slice(0, MAX_RENDER_EDGES);
+  }
+
+  function buildSim(nodes, links, w, h, solo){
     return d3.forceSimulation(nodes)
       .force('link', d3.forceLink(links).id(d=>d.id).distance(l=> l.cross? 90:26).strength(l=> l.cross?0.06:0.16))
-      .force('charge', d3.forceManyBody().strength(-26).distanceMax(260))
-      .force('x', d3.forceX(d=> w*0.5 + (d.comm===0?-1:d.comm===2?1:0)*w*0.20).strength(0.045))
-      .force('y', d3.forceY(d=> h*0.5 + (d.comm===1?-1:0.4)*h*0.16).strength(0.045))
+      .force('charge', d3.forceManyBody().strength(solo? -42 : -26).distanceMax(solo?360:260))
+      .force('x', d3.forceX(d=> solo ? w*0.5 : w*0.5 + (d.comm===0?-1:d.comm===2?1:0)*w*0.20).strength(solo?0.07:0.045))
+      .force('y', d3.forceY(d=> solo ? h*0.5 : h*0.5 + (d.comm===1?-1:0.4)*h*0.16).strength(solo?0.07:0.045))
       .force('collide', d3.forceCollide(d=> d.r+1.2).strength(0.7))
       .force('center', d3.forceCenter(w*0.5, h*0.5).strength(0.02));
   }
@@ -28,8 +42,7 @@
     const ctx = canvas.getContext('2d');
     let W,H,dpr;
     const nodes = data.graph.nodes.map(n=>({...n, r: 1.6 + Math.sqrt(n.deg)*0.62}));
-    const idMap = new Map(nodes.map(n=>[n.id,n]));
-    const links = data.graph.edges.map(e=>({source:e[0],target:e[1],cross:e[2]===1}));
+    const links = sampleEdges(data.graph.edges).map(e=>({source:e[0],target:e[1],cross:e[2]===1}));
 
     function resize(){
       dpr = Math.min(window.devicePixelRatio||1, 2);
@@ -38,7 +51,7 @@
       ctx.setTransform(dpr,0,0,dpr,0,0);
     }
     resize();
-    const sim = buildSim(nodes, links, W, H).alpha(0.9).alphaDecay(0.012);
+    const sim = buildSim(nodes, links, W, H, false).alpha(0.9).alphaDecay(0.012);
     sim.stop();
     // pre-settle synchronously so a static layout renders even if rAF is throttled
     for(let i=0;i<160;i++) sim.tick();
@@ -72,13 +85,25 @@
   };
 
   // ---- INTERACTIVE EXPLORER ----
+  // Catatan desain (Juni 2026): versi sebelumnya menyimpan SATU simulasi
+  // berisi seluruh node, lalu "menyembunyikan" komunitas non-aktif dengan
+  // memaksa posisinya ke (-9999,-9999) sambil tetap menyertakan seluruh edge
+  // (puluhan ribu pada data riil) di setiap tick. Ini rapuh dan berat —
+  // saat hanya 1 komunitas aktif, kepadatan edge yang sangat tinggi pada
+  // data riil membuat layout terlihat seperti error/kosong. Versi ini
+  // membangun ULANG simulasi yang HANYA berisi node+edge dari komunitas
+  // yang sedang aktif — lebih sederhana, lebih ringan, dan tidak punya
+  // mode "setengah jadi" yang bisa pecah.
   window.initExplorer = function(canvas, data, opts){
     opts = opts||{};
     const ctx = canvas.getContext('2d');
     let W,H,dpr;
-    const nodes = data.graph.nodes.map(n=>({...n, r: 2.2 + Math.sqrt(n.deg)*0.78}));
-    const idMap = new Map(nodes.map(n=>[n.id,n]));
-    const links = data.graph.edges.map(e=>({source:e[0],target:e[1],cross:e[2]===1}));
+
+    const allEdges = data.graph.edges;
+    const allNodes = data.graph.nodes.map(n=>({...n, r: 2.2 + Math.sqrt(n.deg)*0.78}));
+
+    let nodes = allNodes, links = [];
+    let sim = null;
     let activeComm = new Set([0,1,2]);
     let hovered=null, focused=null, search='';
     let transform = d3.zoomIdentity;
@@ -90,9 +115,6 @@
       ctx.setTransform(dpr,0,0,dpr,0,0);
     }
     resize();
-    const sim = buildSim(nodes, links, W, H).alpha(0.9).alphaDecay(0.018);
-    sim.stop();
-    for(let i=0;i<220;i++) sim.tick(); // pre-settle synchronously
 
     const tip = document.getElementById('tip');
     function showTip(n, mx, my){
@@ -108,11 +130,6 @@
       tip.style.left=x+'px'; tip.style.top=y+'px';
     }
     function hideTip(){ tip.style.opacity=0; }
-
-    function visible(n){
-      if(!activeComm.has(n.comm)) return false;
-      return true;
-    }
     function matchSearch(n){ return search && n.name.toLowerCase().includes(search); }
 
     function draw(){
@@ -126,18 +143,15 @@
       // edges
       for(const l of links){
         const s=l.source,t=l.target;
-        if(!visible(s)||!visible(t)) continue;
         let alpha = l.cross? 0.18:0.11;
         if(hl){ alpha = (neigh.has(s.id)&&neigh.has(t.id)) ? 0.55 : 0.04; }
         const hlEdge = hl&&neigh.has(s.id)&&neigh.has(t.id);
         ctx.strokeStyle = hlEdge ? (isDark()?'rgba(107,160,216,0.6)':'rgba(74,127,192,0.5)') : edgeColor(l.cross, alpha);
-        ctx.lineWidth = (hl&&neigh.has(s.id)&&neigh.has(t.id))?1.1:0.6;
+        ctx.lineWidth = hlEdge?1.1:0.6;
         ctx.beginPath(); ctx.moveTo(s.x,s.y); ctx.lineTo(t.x,t.y); ctx.stroke();
       }
-      // nodes
+      // nodes (array `nodes` sudah berisi hanya komunitas aktif — tidak perlu filter lagi)
       for(const n of nodes){
-        const vis = visible(n);
-        if(!vis) continue; // hide non-active communities entirely (pure single-community view)
         const isMatch = matchSearch(n);
         let alpha = 0.9;
         if(hl){ alpha = neigh.has(n.id)?1:0.12; }
@@ -152,7 +166,6 @@
       ctx.font='600 11px "Helvetica Neue",Helvetica,Arial';
       ctx.textBaseline='middle';
       for(const n of nodes){
-        if(!visible(n)) continue;
         const isMatch = matchSearch(n);
         const big = n.comp>2.0;
         const show = (hl&&n.id===hl.id) || isMatch || (!hl&&!search&&big);
@@ -166,13 +179,39 @@
       }
       ctx.restore();
     }
-    sim.on('tick', draw);
-    draw(); // render pre-settled layout
+
+    function buildLinksFor(nodeArr){
+      const idSet = new Set(nodeArr.map(n=>n.id));
+      const pool = [];
+      for(const e of allEdges){ if(idSet.has(e[0]) && idSet.has(e[1])) pool.push(e); }
+      return sampleEdges(pool).map(e=>({source:e[0],target:e[1],cross:e[2]===1}));
+    }
+
+    // (re)build a fresh simulation scoped to exactly the active communities.
+    // animate=false -> synchronous pre-settle (used on first load, no jank).
+    // animate=true  -> live d3 transition (used on filter changes, feels responsive).
+    function rebuild(animate){
+      if(sim) sim.stop();
+      nodes = allNodes.filter(n=>activeComm.has(n.comm));
+      links = buildLinksFor(nodes);
+      const solo = activeComm.size===1;
+      sim = buildSim(nodes, links, W, H, solo);
+      if(animate){
+        sim.alpha(0.9).alphaDecay(solo?0.022:0.018);
+      } else {
+        sim.stop();
+        for(let i=0;i<220;i++) sim.tick();
+      }
+      sim.on('tick', draw);
+      draw();
+      if(animate) sim.restart();
+    }
+    rebuild(false);
 
     function findNode(mx,my){
       const x=(mx-transform.x)/transform.k, y=(my-transform.y)/transform.k;
       let best=null,bd=1e9;
-      for(const n of nodes){ if(!visible(n)) continue; const dx=n.x-x,dy=n.y-y,d=dx*dx+dy*dy; const rr=(n.r+4)*(n.r+4); if(d<rr&&d<bd){bd=d;best=n;} }
+      for(const n of nodes){ const dx=n.x-x,dy=n.y-y,d=dx*dx+dy*dy; const rr=(n.r+4)*(n.r+4); if(d<rr&&d<bd){bd=d;best=n;} }
       return best;
     }
     const rect=()=>canvas.getBoundingClientRect();
@@ -196,58 +235,15 @@
     // controls API
     const api = {
       setComm(set){
-        activeComm=set;
-        const solo = set.size===1 ? [...set][0] : null;
-
-        // ---- PURE ISOLATION: hidden nodes are expelled from the layout entirely ----
-        // Force hidden nodes to a far-away fixed position so they don't interact
-        for(const n of nodes){
-          if(solo!==null && !set.has(n.comm)){
-            n.fx = -9999; n.fy = -9999; // fix off-screen
-          } else {
-            n.fx = null; n.fy = null;   // release back into simulation
-          }
-        }
-
-        // Adjust forces: when solo, stronger centering + spread for the visible community
-        sim.force('x', d3.forceX(d=> {
-          if(solo!==null && !set.has(d.comm)) return -9999;
-          return solo!==null ? W*0.5 : W*0.5 + (d.comm===0?-1:d.comm===2?1:0)*W*0.20;
-        }).strength(solo!==null?0.06:0.045));
-        sim.force('y', d3.forceY(d=> {
-          if(solo!==null && !set.has(d.comm)) return -9999;
-          return solo!==null ? H*0.5 : H*0.5 + (d.comm===1?-1:0.4)*H*0.16;
-        }).strength(solo!==null?0.06:0.045));
-
-        // Stronger repulsion when solo so the single community fills the canvas
-        sim.force('charge', d3.forceManyBody().strength(d=> {
-          if(solo!==null && !set.has(d.comm)) return 0;
-          return solo!==null ? -42 : -26;
-        }).distanceMax(solo!==null?360:260));
-
-        // Only collide visible nodes
-        sim.force('collide', d3.forceCollide(d=> {
-          if(solo!==null && !set.has(d.comm)) return 0;
-          return d.r+1.2;
-        }).strength(0.7));
-
-        // Link strength: zero for links involving hidden nodes
-        sim.force('link').strength(l=> {
-          const sVis = set.has(l.source.comm!==undefined?l.source.comm:nodes.find(n=>n.id===l.source)?.comm);
-          const tVis = set.has(l.target.comm!==undefined?l.target.comm:nodes.find(n=>n.id===l.target)?.comm);
-          if(!sVis || !tVis) return 0;
-          return l.cross? 0.06 : 0.16;
-        });
-
+        activeComm = new Set(set);
         api.reset();
-        sim.alpha(0.8).restart();
-        draw();
+        rebuild(true);
       },
       setSearch(s){ search=(s||'').toLowerCase().trim(); draw(); },
       reset(){ transform=d3.zoomIdentity; d3.select(canvas).call(d3.zoom().transform, d3.zoomIdentity); focused=null; draw(); },
-      restart(){ sim.alpha(0.5).restart(); }
+      restart(){ if(sim) sim.alpha(0.5).restart(); }
     };
-    window.addEventListener('resize', ()=>{ resize(); sim.force('center', d3.forceCenter(W*0.5,H*0.5)); sim.alpha(0.3).restart(); });
+    window.addEventListener('resize', ()=>{ resize(); if(sim) sim.force('center', d3.forceCenter(W*0.5,H*0.5)); if(sim) sim.alpha(0.3).restart(); });
     return api;
   };
 })();

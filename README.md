@@ -27,22 +27,13 @@ Folder dinamai `docs/` (bukan `public/`) supaya bisa dideploy **tanpa
 konfigurasi tambahan** di beberapa platform gratis sekaligus — lihat di
 bawah.
 
-## ⚠️ Data masih sintetis
+## Data
 
-`docs/data/network.json` saat ini `"meta.generated": "synthetic"` —
-masih placeholder Barabási–Albert, BUKAN data DBLP asli. Generate ulang
-dari 3 GEXF komunitasmu sebelum deploy final:
+`docs/data/network.json` sekarang berisi **data riil** (`"meta.generated": "dblp-xml"`) — hasil langsung dari pipeline `MAIN.ipynb` (parsing DBLP XML 2010–2024, sampling 3.000 node dari 3 komunitas terbesar, lihat skill `dblp-sna`). Tidak perlu menjalankan apa pun lagi untuk men-deploy data ini.
 
-```bash
-pip install -r scripts/requirements.txt
-python scripts/build_network_json.py \
-  --communities raw/Komunitas_A.gexf raw/Komunitas_B.gexf raw/Komunitas_C.gexf \
-  --out docs/data/network.json
-```
+`scripts/build_network_json.py` **tidak lagi diperlukan** untuk alur kerja saat ini — script ini hanya fallback untuk kasus di mana kamu HANYA punya file GEXF mentah (tanpa notebook yang sudah menghasilkan `network.json` langsung). Karena `MAIN.ipynb` sudah memproduksi `network.json` dengan skema yang tepat sebagai salah satu output pipeline-nya (lihat Tabel V & XV pada laporan), script ini jadi opsional. Folder `raw/` dan `scripts/` aman untuk dihapus kalau mau merampingkan repo, tapi tidak mengganggu apa pun jika dibiarkan.
 
-Kalau punya `G_3000.gexf` (gabungan dengan edge cross-community),
-tambahkan `--g3000 raw/G_3000.gexf` — tanpa ini, edge antar-komunitas
-kemungkinan tidak lengkap (lihat docstring di script).
+Kalau suatu saat kamu re-run notebook dengan rentang tahun/sampling berbeda, cukup timpa `docs/data/network.json` dengan output baru — seluruh visualisasi (chart, leaderboard, graf eksplorer) menyesuaikan otomatis karena semuanya dibaca dari satu file ini, tanpa nilai yang di-hardcode di JS.
 
 ## Jalankan lokal
 

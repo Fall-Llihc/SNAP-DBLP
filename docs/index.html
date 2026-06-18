@@ -42,12 +42,12 @@
   <canvas id="hero-canvas"></canvas>
   <div class="hero-veil"></div>
   <div class="hero-inner">
-    <p class="kicker reveal">DBLP · SNAP · Analisis Jaringan Sosial</p>
+    <p class="kicker reveal">DBLP XML · 2010–2024 · Analisis Jaringan Sosial</p>
     <h1 class="reveal d1">Memetakan<br><span class="ital">kolaborasi</span> ilmiah</h1>
     <p class="dek reveal d2">Analisis jaringan ko-autoran dari tiga komunitas riset terbesar: mengidentifikasi aktor sentral, menjelaskan sumber pengaruhnya, dan memetakan keterhubungan antar-komunitas.</p>
     <div class="hero-meta reveal d3">
       <div class="stat"><div class="num" data-count="3000">3.000</div><div class="lab">Peneliti (node)</div></div>
-      <div class="stat"><div class="num" data-count="7293">7.293</div><div class="lab">Kolaborasi (edge)</div></div>
+      <div class="stat"><div class="num" data-count="106078">106.078</div><div class="lab">Kolaborasi (edge)</div></div>
       <div class="stat"><div class="num">3</div><div class="lab">Komunitas riset</div></div>
     </div>
   </div>
@@ -67,7 +67,7 @@
         <div class="ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 3v18M3 12h18" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></div>
         <div>
           <div class="dt">Catatan data</div>
-          <div class="dd">Visualisasi ini berjalan di atas <strong>data sintetis</strong> yang mereplikasi properti statistik jaringan DBLP (scale-free, small-world, <code>seed=42</code>); nama peneliti masih berupa placeholder. Untuk menggunakan data sebenarnya, ganti berkas <code>data/network.json</code> dengan ekspor GEXF berformat sama, dan seluruh visualisasi akan menyesuaikan secara otomatis.</div>
+          <div class="dd">Visualisasi ini berjalan di atas <strong>data riil</strong> hasil parsing DBLP XML dump (2010–2024): 3.000 peneliti dari tiga komunitas riset terbesar (top-1.000 per komunitas berdasarkan derajat), dengan 106.078 kolaborasi di antara mereka. Nama yang tampil adalah nama penulis asli sesuai pencatatan DBLP — karena DBLP XML tidak mendisambiguasi penulis bernama identik tanpa ORCID, ada kemungkinan kecil dua peneliti berbeda dengan nama sama tergabung sebagai satu node.</div>
         </div>
       </div>
     </div>
@@ -86,8 +86,8 @@
     <div class="figure plush reveal d1">
       <div class="fig-head" style="display:flex;justify-content:space-between;align-items:flex-end;gap:20px;flex-wrap:wrap">
         <div>
-          <p class="fig-title">Subjaringan inti — 495 peneliti paling terhubung <span class="info-btn" data-info="graph">i</span></p>
-          <p class="fig-sub">Disarikan dari 3.000 node penuh untuk menjaga keterbacaan; node penghubung (broker) antar-komunitas selalu disertakan.</p>
+          <p class="fig-title">Subjaringan inti — 498 peneliti paling terhubung <span class="info-btn" data-info="graph">i</span></p>
+          <p class="fig-sub">Disarikan dari 3.000 node penuh untuk menjaga keterbacaan; node penghubung (broker) antar-komunitas selalu disertakan. Pada tampilan yang sangat padat, sebagian garis koneksi disampling secara acak agar titik peneliti tetap terlihat jelas — seluruh node tetap ditampilkan.</p>
         </div>
         <div class="controls">
           <div class="search-box"><span class="sic"><svg width="14" height="14" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2"/><path d="m20 20-3-3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></span><input id="explorer-search" placeholder="Cari peneliti…" autocomplete="off"></div>
@@ -123,7 +123,7 @@
       </div>
     </div>
     <div class="narrow reveal d1" style="margin-top:30px;padding:0">
-      <p class="callout">Komunitas <em>Machine Learning</em> memiliki derajat rata-rata tertinggi, menandakan kolaborasi paling rapat. Namun, sentralitas tertinggi tidak selalu sejalan dengan ukuran komunitas.</p>
+      <p class="callout">Komunitas <em>C</em> memiliki derajat rata-rata tertinggi (98,75), sedikit melampaui Komunitas A (94,03) — keduanya jauh lebih intensif berkolaborasi daripada Komunitas B (19,37). Namun sentralitas tertinggi tidak selalu sejalan dengan ukuran komunitas: ketiganya berukuran sama (1.000 peneliti).</p>
     </div>
   </div>
 </section>
@@ -217,20 +217,20 @@
     <div class="prose reveal" style="margin-bottom:40px">
       <p class="kicker">Metodologi &amp; Transparansi</p>
       <h2>Metode perhitungan</h2>
-      <p class="dek">Reprodusibilitas dijaga melalui penetapan <code style="font-family:var(--mono);font-size:0.85em">seed=42</code>. Pada skala besar, betweenness dan closeness dihitung menggunakan pendekatan <em>sampling</em> yang cukup akurat untuk keperluan pemeringkatan, sekaligus jauh lebih efisien dibandingkan komputasi penuh.</p>
+      <p class="dek">Reprodusibilitas dijaga melalui penetapan <code style="font-family:var(--mono);font-size:0.85em">seed=42</code>. Pada skala besar, betweenness dihitung menggunakan pendekatan <em>sampling</em> yang cukup akurat untuk keperluan pemeringkatan, sekaligus jauh lebih efisien dibandingkan komputasi penuh; closeness, degree, dan PageRank dihitung eksak.</p>
     </div>
     <div class="method-grid reveal d1">
       <div class="m"><div class="mk">Degree Centrality</div><div class="mt">Seberapa populer</div><p>Jumlah kolaborator langsung. Dihitung eksak untuk seluruh node.</p></div>
-      <div class="m"><div class="mk">Betweenness</div><div class="mt">Seberapa menjembatani</div><p>Frekuensi sebuah node berada pada jalur terpendek antar node lain. Diestimasi dengan algoritma Brandes dari 260 sumber sampel.</p></div>
-      <div class="m"><div class="mk">Closeness</div><div class="mt">Seberapa dekat</div><p>Kebalikan rata-rata jarak ke node lain. Diestimasi dari 120 <em>landmark</em> BFS.</p></div>
-      <div class="m"><div class="mk">PageRank</div><div class="mt">Seberapa prestisius</div><p>Pengaruh yang menyebar lewat tetangga berpengaruh. 40 iterasi power-method, damping 0,85.</p></div>
+      <div class="m"><div class="mk">Betweenness</div><div class="mt">Seberapa menjembatani</div><p>Frekuensi sebuah node berada pada jalur terpendek antar node lain. Diestimasi dengan algoritma Brandes dari 500 sumber sampel (k=500) — komputasi eksak O(VE) tidak feasibel pada jaringan sepadat ini.</p></div>
+      <div class="m"><div class="mk">Closeness</div><div class="mt">Seberapa dekat</div><p>Kebalikan rata-rata jarak ke node lain. Dihitung eksak (bukan estimasi) untuk seluruh node.</p></div>
+      <div class="m"><div class="mk">PageRank</div><div class="mt">Seberapa prestisius</div><p>Pengaruh yang menyebar lewat tetangga berpengaruh. Damping factor α=0,85 (nx.pagerank).</p></div>
     </div>
     <div class="reveal d2" style="margin-top:24px">
       <div class="databanner" style="background:var(--c1-wash);border-color:#f0dada">
         <div class="ic" style="background:#f3d8d8;color:var(--c1-ink)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 8v5M12 16h.01" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.5"/></svg></div>
         <div>
-          <div class="dt">Kualitas nama peneliti</div>
-          <div class="dd">Pada visualisasi ini nama bersifat sintetis sehingga cakupannya 100%. Ketika memuat data GEXF sebenarnya, pastikan <strong>kecocokan nama</strong> terhadap ID DBLP terverifikasi — hasil tinjauan menemukan sejumlah nama pada notebook keliru, bukan sekadar kosong. Sertakan kolom <code>label</code>/<code>name</code> yang telah diverifikasi pada setiap node agar tooltip dan leaderboard menampilkan identitas yang benar.</div>
+          <div class="dt">Keterbatasan metodologis</div>
+          <div class="dd">Dua hal perlu dibaca dengan hati-hati. Pertama, DBLP XML tidak mendisambiguasi penulis bernama identik tanpa ORCID, sehingga dua peneliti berbeda berpotensi tergabung sebagai satu node. Kedua, betweenness centrality dihitung dengan aproksimasi k=500 node sampel, bukan eksak — peringkat broker papan atas tetap stabil, namun posisi pada ekor distribusi dapat sedikit bergeser.</div>
         </div>
       </div>
     </div>
@@ -267,7 +267,7 @@
         </div>
       </div>
     </div>
-    <p class="contrib-note reveal d2">Proyek tugas akhir mata kuliah <strong>Analisis Media Sosial</strong> — eksplorasi, visualisasi, dan analisis jaringan ko-autoran DBLP berbasis data SNAP.</p>
+    <p class="contrib-note reveal d2">Proyek tugas akhir mata kuliah <strong>Analisis Media Sosial</strong> — eksplorasi, visualisasi, dan analisis jaringan ko-autoran DBLP berbasis DBLP XML dump resmi (2010–2024).</p>
   </div>
 </section>
 
@@ -275,9 +275,9 @@
 <footer class="foot">
   <div class="wrap">
     <h3>Memetakan kolaborasi ilmiah</h3>
-    <p style="max-width:46rem;color:#aeb9c8;margin-top:14px">Proyek mata kuliah <strong style="color:#dde6f0">Analisis Media Sosial</strong> oleh <strong style="color:#dde6f0">Kelompok 10</strong>. Visualisasi &amp; analisis jaringan sosial untuk dataset ko-autoran DBLP (SNAP) — tiga komunitas terbesar, ~1.000 peneliti per komunitas.</p>
+    <p style="max-width:46rem;color:#aeb9c8;margin-top:14px">Proyek mata kuliah <strong style="color:#dde6f0">Analisis Media Sosial</strong> oleh <strong style="color:#dde6f0">Kelompok 10</strong>. Visualisasi &amp; analisis jaringan ko-autoran DBLP (XML dump resmi, 2010–2024) — tiga komunitas terbesar, 1.000 peneliti per komunitas, 106.078 kolaborasi.</p>
     <hr class="divider">
-    <p class="fnote">DATA · DBLP co-authorship (SNAP) — demo memakai data sintetis berproperti setara · seed 42<br>METRIK · Degree, Betweenness (Brandes sampled), Closeness (landmark BFS), PageRank · korelasi Pearson &amp; Spearman<br>TIM · Kelompok 10 — Almira Faradhita Alifah, Arkhan Falih Fahrie Puspita, Keisha Hernantya Zahra<br>GANTI DATA · letakkan ekspor di <code style="color:#9fc0ea">data/network.json</code> dengan skema yang sama</p>
+    <p class="fnote">DATA · DBLP XML dump resmi (dblp.org/xml/), cakupan 2010–2024 — data riil, bukan sintetis<br>METRIK · Degree (eksak), Betweenness (Brandes, k=500 sampel), Closeness (eksak), PageRank (α=0,85) · korelasi Pearson &amp; Spearman<br>TIM · Kelompok 10 — Almira Faradhita Alifah, Arkhan Falih Fahrie Puspita, Keisha Hernantya Zahra<br>PERBARUI DATA · jalankan ulang pipeline notebook lalu timpa <code style="color:#9fc0ea">docs/data/network.json</code> dengan skema yang sama</p>
   </div>
 </footer>
 

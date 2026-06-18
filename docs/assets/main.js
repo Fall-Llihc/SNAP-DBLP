@@ -129,7 +129,7 @@
     const dark=document.documentElement.classList.contains('dark');
     const ci=dark?['#8dbde6','#e8b0b0','#b5afe0']:['#2f5e93','#b25a5a','#5d559a'];
     const cc=dark?['#6ba0d8','#e09e9e','#9d96d0']:['#5b8fc9','#d98a8a','#8a82c0'];
-    const desc=['Basis data, penambangan pola, sistem rekomendasi.','Pembelajaran mesin, jaringan saraf, visi komputer.','Protokol, sistem terdistribusi, keamanan jaringan.'];
+    const desc=['Inti yang sangat padat (highly-dense core): beberapa super-hub mengikat banyak simpul kecil di sekelilingnya — budaya kolaborasi kelompok riset besar dan multipihak.','Struktur desentralisasi: tidak ada simpul dominan tunggal, terpecah jadi banyak sub-klaster yang dihubungkan jembatan kolaborasi tipis — derajat rata-rata jauh lebih rendah dari A dan C.','Mesh kolaborasi paling padat dan merata — hampir seluruh anggota saling terhubung tanpa bergantung pada satu atau dua tokoh sentral saja.'];
     wrap.innerHTML=DATA.profile.map((p,i)=>`
       <div class="comm-card">
         <div class="bar" style="background:${cc[i]}"></div>
