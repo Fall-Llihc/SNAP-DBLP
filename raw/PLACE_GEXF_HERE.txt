@@ -1,0 +1,9 @@
+Taruh 3 file GEXF komunitas di sini:
+  Komunitas_A.gexf
+  Komunitas_B.gexf
+  Komunitas_C.gexf
+
+Opsional, kalau ada: G_3000.gexf (gabungan, untuk edge cross-community).
+
+Lihat scripts/build_network_json.py untuk cara generate ulang
+public/data/network.json dari file-file ini.

@@ -2,7 +2,7 @@
 build_network_json.py
 ======================
 Konversi 3 file GEXF per-komunitas (masing-masing ~1000 node, hasil
-migrasi.ipynb §4-7) menjadi public/data/network.json sesuai skema yang
+migrasi.ipynb §4-7) menjadi docs/data/network.json sesuai skema yang
 dipakai assets/main.js, viz-charts.js, viz-graph.js.
 
 Asumsi tiap node di GEXF SUDAH punya atribut (lihat SKILL.md §"GEXF Export"):
@@ -25,7 +25,7 @@ Pakai:
       --communities raw/Komunitas_A.gexf raw/Komunitas_B.gexf raw/Komunitas_C.gexf \
       --labels "Data Mining & Basis Data" "Machine Learning & Visi Komputer" "Jaringan & Sistem Terdistribusi" \
       --g3000 raw/G_3000.gexf \
-      --out public/data/network.json
+      --out docs/data/network.json
 """
 import argparse
 import json
@@ -180,7 +180,7 @@ def main():
         "Data Mining & Basis Data", "Machine Learning & Visi Komputer", "Jaringan & Sistem Terdistribusi"])
     ap.add_argument("--shorts", nargs=3, default=["Data Mining", "Machine Learning", "Jaringan & Sistem"])
     ap.add_argument("--g3000", default=None, help="Opsional: GEXF gabungan utk edge cross-community")
-    ap.add_argument("--out", default="public/data/network.json")
+    ap.add_argument("--out", default="docs/data/network.json")
     args = ap.parse_args()
 
     graphs = load_communities(args.communities, args.labels)
