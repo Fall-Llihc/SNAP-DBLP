@@ -11,8 +11,11 @@
   function ccol(){ return isDark() ? ['#6ba0d8','#f0a08c','#a89ee0'] : ['#5b8fc9','#d98a8a','#8a82c0']; }
   function cink(){ return isDark() ? ['#8dbde6','#f5b8a4','#c0b8ec'] : ['#2f5e93','#b25a5a','#5d559a']; }
   function edgeColor(cross, alpha){
-    if(isDark()) return cross ? `rgba(126,150,196,${alpha})` : `rgba(102,120,160,${alpha})`;
-    return cross ? `rgba(120,130,150,${alpha})` : `rgba(140,150,168,${alpha})`;
+    // Edges sedikit dinaikkan kontrasnya supaya tetap terbaca setelah node
+    // diperkecil; cross-edges (antar-komunitas) selalu lebih terang sedikit
+    // daripada edge internal supaya peran broker tetap terlihat.
+    if(isDark()) return cross ? `rgba(150,180,220,${alpha})` : `rgba(125,150,190,${alpha})`;
+    return cross ? `rgba(100,115,140,${alpha})` : `rgba(120,135,160,${alpha})`;
   }
   function labelBg(){ return isDark() ? 'rgba(17,24,39,0.85)' : 'rgba(255,255,255,0.85)'; }
 
@@ -22,22 +25,39 @@
   // node — terlihat seperti "komunitas tidak muncul". Edge dibatasi acak
   // demi keterbacaan; node TIDAK pernah dikurangi, hanya garis koneksinya
   // yang disampling untuk digambar.
-  const MAX_RENDER_EDGES = 1500;
-  function sampleEdges(pool){
-    if(pool.length<=MAX_RENDER_EDGES) return pool;
+  //
+  // Catatan revisi (Juni 2026): batas edge solo dinaikkan dibanding mode
+  // multi karena pada mode solo kanvas hanya menampung satu komunitas, jadi
+  // ada lebih banyak ruang dan kepadatan edge "asli" relatif terbaca tanpa
+  // mengubur node-nya.
+  const MAX_RENDER_EDGES_MULTI = 1500;
+  const MAX_RENDER_EDGES_SOLO  = 2200;
+  function sampleEdges(pool, max){
+    if(pool.length<=max) return pool;
     const arr=pool.slice();
     for(let i=arr.length-1;i>0;i--){ const j=(Math.random()*(i+1))|0; const t=arr[i]; arr[i]=arr[j]; arr[j]=t; }
-    return arr.slice(0, MAX_RENDER_EDGES);
+    return arr.slice(0, max);
   }
 
+  // Force-layout parameters: pada mode solo kita longgarkan jaringan secara
+  // signifikan (charge lebih repulsif, link lebih panjang, collide lebih
+  // longgar) supaya edges tidak tertutup oleh kerumunan node. Pada mode
+  // multi kita pertahankan pemisahan tiga gugus tapi tetap dengan node
+  // yang lebih kecil daripada versi sebelumnya.
   function buildSim(nodes, links, w, h, solo){
     return d3.forceSimulation(nodes)
-      .force('link', d3.forceLink(links).id(d=>d.id).distance(l=> l.cross? 90:26).strength(l=> l.cross?0.06:0.16))
-      .force('charge', d3.forceManyBody().strength(solo? -42 : -26).distanceMax(solo?360:260))
-      .force('x', d3.forceX(d=> solo ? w*0.5 : w*0.5 + (d.comm===0?-1:d.comm===2?1:0)*w*0.20).strength(solo?0.07:0.045))
-      .force('y', d3.forceY(d=> solo ? h*0.5 : h*0.5 + (d.comm===1?-1:0.4)*h*0.16).strength(solo?0.07:0.045))
-      .force('collide', d3.forceCollide(d=> d.r+1.2).strength(0.7))
-      .force('center', d3.forceCenter(w*0.5, h*0.5).strength(0.02));
+      .force('link', d3.forceLink(links).id(d=>d.id)
+        .distance(l=> l.cross ? 110 : (solo ? 58 : 32))
+        .strength(l=> l.cross ? 0.05 : (solo ? 0.07 : 0.13)))
+      .force('charge', d3.forceManyBody()
+        .strength(solo ? -150 : -55)
+        .distanceMax(solo ? 480 : 320))
+      .force('x', d3.forceX(d=> solo ? w*0.5 : w*0.5 + (d.comm===0?-1:d.comm===2?1:0)*w*0.20)
+        .strength(solo ? 0.04 : 0.05))
+      .force('y', d3.forceY(d=> solo ? h*0.5 : h*0.5 + (d.comm===1?-1:0.4)*h*0.16)
+        .strength(solo ? 0.04 : 0.05))
+      .force('collide', d3.forceCollide(d=> d.r + (solo ? 2.6 : 1.5)).strength(0.85))
+      .force('center', d3.forceCenter(w*0.5, h*0.5).strength(0.012));
   }
 
   // ---- seeded PRNG (mulberry32) so the decorative hero scene is stable across reloads ----
@@ -156,14 +176,17 @@
     let W,H,dpr;
 
     const allEdges = data.graph.edges;
-    // Node radius depends on which view is active. With all three communities
-    // shown at once, sizing strictly by degree produces a few huge circles
-    // next to a sea of tiny ones, which reads as noisy rather than informative
-    // at this density. The overview keeps radii nearly uniform (small range);
-    // focusing a single community re-introduces degree as a visible size cue,
-    // since there the canvas has room to show who the local hubs are.
+    // Node radius bergantung pada view aktif. Pada mode multi (3 komunitas)
+    // skala derajat dipampatkan supaya tidak ada lingkaran raksasa yang
+    // menutup tetangganya; pada mode solo skala dilonggarkan sedikit
+    // sehingga hub lokal masih terlihat tapi tetap jauh lebih kecil
+    // daripada versi sebelumnya (yang membuat node "meledak" saat ganti
+    // komunitas dan menutupi seluruh edges).
     function nodeRadius(deg, solo){
-      return solo ? 2.6 + Math.sqrt(deg)*0.92 : 2.6 + Math.min(Math.sqrt(deg), 9)*0.5;
+      const d = Math.max(0, deg||0);
+      return solo
+        ? 1.8 + Math.sqrt(d)*0.42
+        : 1.8 + Math.min(Math.sqrt(d), 10)*0.32;
     }
     const allNodes = data.graph.nodes.map(n=>({...n, r: nodeRadius(n.deg, false)}));
 
@@ -208,11 +231,15 @@
       // edges
       for(const l of links){
         const s=l.source,t=l.target;
-        let alpha = l.cross? 0.18:0.11;
+        // alpha dasar dinaikkan dari versi sebelumnya (0.11/0.18) supaya
+        // garis koneksi tetap terbaca di belakang node yang sudah lebih
+        // kecil. Saat ada node yang di-hover/di-klik, edges yang tidak
+        // bertetangga tetap diredam supaya neighborhood-nya menonjol.
+        let alpha = l.cross? 0.34 : 0.22;
         if(hl){ alpha = (neigh.has(s.id)&&neigh.has(t.id)) ? 0.55 : 0.04; }
         const hlEdge = hl&&neigh.has(s.id)&&neigh.has(t.id);
-        ctx.strokeStyle = hlEdge ? (isDark()?'rgba(107,160,216,0.6)':'rgba(74,127,192,0.5)') : edgeColor(l.cross, alpha);
-        ctx.lineWidth = hlEdge?1.1:0.6;
+        ctx.strokeStyle = hlEdge ? (isDark()?'rgba(107,160,216,0.65)':'rgba(74,127,192,0.55)') : edgeColor(l.cross, alpha);
+        ctx.lineWidth = hlEdge?1.3:0.85;
         ctx.beginPath(); ctx.moveTo(s.x,s.y); ctx.lineTo(t.x,t.y); ctx.stroke();
       }
       // nodes (array `nodes` sudah berisi hanya komunitas aktif — tidak perlu filter lagi)
@@ -227,13 +254,13 @@
         if((hl&&n.id===hl.id)||isMatch){ ctx.lineWidth=1.6; ctx.strokeStyle=isDark()?'#111827':'#fff'; ctx.stroke(); ctx.lineWidth=2.4; ctx.strokeStyle=CI[n.comm]; ctx.stroke(); }
       }
       ctx.globalAlpha=1;
-      // labels for top nodes / hovered / matches
+      // labels untuk top-N (di-tandai _label saat rebuild), node yang
+      // di-hover/klik, dan node yang cocok dengan pencarian.
       ctx.font='600 11px "Helvetica Neue",Helvetica,Arial';
       ctx.textBaseline='middle';
       for(const n of nodes){
         const isMatch = matchSearch(n);
-        const big = n.comp>2.0;
-        const show = (hl&&n.id===hl.id) || isMatch || (!hl&&!search&&big);
+        const show = (hl&&n.id===hl.id) || isMatch || (!hl&&!search&&n._label);
         if(!show) continue;
         ctx.globalAlpha = 1;
         const tx=n.x+n.r+4, ty=n.y;
@@ -245,11 +272,12 @@
       ctx.restore();
     }
 
-    function buildLinksFor(nodeArr){
+    function buildLinksFor(nodeArr, solo){
       const idSet = new Set(nodeArr.map(n=>n.id));
       const pool = [];
       for(const e of allEdges){ if(idSet.has(e[0]) && idSet.has(e[1])) pool.push(e); }
-      return sampleEdges(pool).map(e=>({source:e[0],target:e[1],cross:e[2]===1}));
+      const cap = solo ? MAX_RENDER_EDGES_SOLO : MAX_RENDER_EDGES_MULTI;
+      return sampleEdges(pool, cap).map(e=>({source:e[0],target:e[1],cross:e[2]===1}));
     }
 
     // (re)build a fresh simulation scoped to exactly the active communities.
@@ -260,13 +288,25 @@
       const solo = activeComm.size===1;
       nodes = allNodes.filter(n=>activeComm.has(n.comm));
       for(const n of nodes) n.r = nodeRadius(n.deg, solo);
-      links = buildLinksFor(nodes);
+      links = buildLinksFor(nodes, solo);
+      // Tandai node mana yang layak diberi label permanen — dibatasi
+      // top-12 (multi) / top-10 (solo) berdasarkan composite score di
+      // dalam scope view aktif. Tanpa pembatasan ini, mode solo Komunitas
+      // A akan menampilkan ~36 label sekaligus dan saling tumpang tindih.
+      const N_LABELS = solo ? 10 : 12;
+      const ranked = nodes.slice().sort((a,b)=>(b.comp||0)-(a.comp||0));
+      const labelSet = new Set(ranked.slice(0, N_LABELS).map(n=>n.id));
+      for(const n of nodes) n._label = labelSet.has(n.id);
       sim = buildSim(nodes, links, W, H, solo);
       if(animate){
-        sim.alpha(0.9).alphaDecay(solo?0.022:0.018);
+        // alpha lebih lama supaya layout punya waktu menyebar setelah
+        // collide+charge yang baru lebih longgar; tanpa ini node baru
+        // berhenti saat masih bertumpuk
+        sim.alpha(1).alphaDecay(solo?0.018:0.020);
       } else {
         sim.stop();
-        for(let i=0;i<220;i++) sim.tick();
+        const ticks = solo ? 280 : 240;
+        for(let i=0;i<ticks;i++) sim.tick();
       }
       sim.on('tick', draw);
       draw();
