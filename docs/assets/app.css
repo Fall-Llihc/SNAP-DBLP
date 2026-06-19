@@ -334,6 +334,21 @@ html.dark .foot{ background:#0d1320; }
 .view-tabs .vtab[data-view="1"].active{ background:var(--c1); }
 .view-tabs .vtab[data-view="2"].active{ background:var(--c2); }
 
+/* Dark mode: tombol "Semua komunitas" mengikuti pola yang sama dengan
+   light mode (button kontras vs background web, teks mengikuti warna
+   background web). Di light mode: background button gelap (var(--ink)
+   = #1b2330), teks putih, sedangkan web bg putih. Di dark mode kita
+   balik: background button putih, teks berwarna seperti web bg
+   (#111827) supaya tidak menjadi semu (sebelumnya teks putih di atas
+   button hampir-putih akibat var(--ink) di dark = #e4e8ef). */
+html.dark .view-tabs .vtab[data-view="all"].active{
+  background:#fff;
+  color:var(--bg);
+}
+html.dark .view-tabs .vtab[data-view="all"].active .vdot{
+  background:var(--bg) !important;
+}
+
 /* responsive */
 @media (max-width:920px){
   .split,.split.rev{ grid-template-columns:1fr; gap:36px; }
