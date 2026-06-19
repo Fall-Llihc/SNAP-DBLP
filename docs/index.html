@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Memetakan Kolaborasi — Analisis Jaringan DBLP</title>
+<title>Memetakan Kolaborasi: Analisis Jaringan DBLP</title>
 <link rel="icon" type="image/svg+xml" href="favicon.svg">
 <link rel="icon" type="image/x-icon" href="favicon.ico">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
@@ -44,10 +44,10 @@
   <div class="hero-inner">
     <p class="kicker reveal">DBLP XML · 2010–2024 · Analisis Jaringan Sosial</p>
     <h1 class="reveal d1">Memetakan<br><span class="ital">kolaborasi</span> ilmiah</h1>
-    <p class="dek reveal d2">Analisis jaringan ko-autoran dari tiga komunitas riset terbesar: mengidentifikasi aktor sentral, menjelaskan sumber pengaruhnya, dan memetakan keterhubungan antar-komunitas.</p>
+    <p class="dek reveal d2">Analisis jaringan ko-autoran dari tiga komunitas riset terbesar pada DBLP: mengidentifikasi aktor sentral, menjelaskan sumber pengaruhnya, dan memetakan keterhubungan antar-komunitas.</p>
     <div class="hero-meta reveal d3">
       <div class="stat"><div class="num" data-count="3000">3.000</div><div class="lab">Peneliti (node)</div></div>
-      <div class="stat"><div class="num" data-count="106078">106.078</div><div class="lab">Kolaborasi (edge)</div></div>
+      <div class="stat"><div class="num" data-count="106054">106.054</div><div class="lab">Kolaborasi (edge)</div></div>
       <div class="stat"><div class="num">3</div><div class="lab">Komunitas riset</div></div>
     </div>
   </div>
@@ -60,14 +60,14 @@
     <div class="prose reveal">
       <p class="kicker">Pengantar</p>
       <h2>Setiap titik adalah seorang peneliti.<br>Setiap garis, sebuah makalah bersama.</h2>
-      <p class="dek">Analisis ini menelaah jaringan ko-autoran DBLP dengan memfokuskan pada <strong>tiga komunitas terpadat</strong> — masing-masing sekitar seribu peneliti. Pertanyaan yang memandu seluruh kajian ini sederhana namun mendasar: di tengah ribuan kolaborasi, siapa aktor yang paling menentukan struktur jaringan?</p>
+      <p class="dek">Analisis ini menelaah jaringan ko-autoran DBLP dengan memfokuskan pada <strong>tiga komunitas terpadat</strong>, masing-masing beranggotakan sekitar seribu peneliti. Pertanyaan yang memandu seluruh kajian ini sederhana namun mendasar: di tengah ribuan kolaborasi, siapa aktor yang paling menentukan struktur jaringan?</p>
     </div>
     <div class="reveal d1" style="margin-top:38px">
       <div class="databanner">
         <div class="ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 3v18M3 12h18" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></div>
         <div>
           <div class="dt">Catatan data</div>
-          <div class="dd">Visualisasi ini berjalan di atas <strong>data riil</strong> hasil parsing DBLP XML dump (2010–2024): 3.000 peneliti dari tiga komunitas riset terbesar (top-1.000 per komunitas berdasarkan derajat), dengan 106.078 kolaborasi di antara mereka. Nama yang tampil adalah nama penulis asli sesuai pencatatan DBLP — karena DBLP XML tidak mendisambiguasi penulis bernama identik tanpa ORCID, ada kemungkinan kecil dua peneliti berbeda dengan nama sama tergabung sebagai satu node.</div>
+          <div class="dd">Visualisasi ini berjalan di atas <strong>data riil</strong> hasil parsing DBLP XML dump (2010–2024): 3.000 peneliti dari tiga komunitas riset terbesar (top-1.000 per komunitas berdasarkan derajat), dengan 106.054 kolaborasi di antara mereka (densitas graf 0,0236). Nama yang tampil adalah nama penulis asli sesuai pencatatan DBLP. Karena DBLP XML tidak mendisambiguasi penulis bernama identik tanpa ORCID, terdapat kemungkinan kecil dua peneliti berbeda dengan nama sama tergabung sebagai satu node.</div>
         </div>
       </div>
     </div>
@@ -86,8 +86,8 @@
     <div class="figure plush reveal d1">
       <div class="fig-head" style="display:flex;justify-content:space-between;align-items:flex-end;gap:20px;flex-wrap:wrap">
         <div>
-          <p class="fig-title">Subjaringan inti — 498 peneliti paling terhubung <span class="info-btn" data-info="graph">i</span></p>
-          <p class="fig-sub">Disarikan dari 3.000 node penuh untuk menjaga keterbacaan; node penghubung (broker) antar-komunitas selalu disertakan. Pada tampilan yang sangat padat, sebagian garis koneksi disampling secara acak agar titik peneliti tetap terlihat jelas — seluruh node tetap ditampilkan.</p>
+          <p class="fig-title">Subjaringan inti (498 peneliti paling terhubung) <span class="info-btn" data-info="graph">i</span></p>
+          <p class="fig-sub">Disarikan dari 3.000 node penuh untuk menjaga keterbacaan; node penghubung (broker) antar-komunitas selalu disertakan. Pada tampilan yang sangat padat, sebagian garis koneksi disampling secara acak agar titik peneliti tetap terlihat jelas. Seluruh node tetap ditampilkan tanpa pengurangan.</p>
         </div>
         <div class="controls">
           <div class="search-box"><span class="sic"><svg width="14" height="14" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2"/><path d="m20 20-3-3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></span><input id="explorer-search" placeholder="Cari peneliti…" autocomplete="off"></div>
@@ -123,7 +123,7 @@
       </div>
     </div>
     <div class="narrow reveal d1" style="margin-top:30px;padding:0">
-      <p class="callout">Komunitas <em>C</em> memiliki derajat rata-rata tertinggi (98,75), sedikit melampaui Komunitas A (94,03) — keduanya jauh lebih intensif berkolaborasi daripada Komunitas B (19,37). Namun sentralitas tertinggi tidak selalu sejalan dengan ukuran komunitas: ketiganya berukuran sama (1.000 peneliti).</p>
+      <p class="callout">Komunitas <em>C</em> memiliki derajat rata-rata tertinggi (98,75), sedikit melampaui Komunitas A (94,03). Keduanya jauh lebih intensif berkolaborasi dibandingkan Komunitas B (19,37), meski ketiga komunitas berukuran sama (1.000 peneliti). Sentralitas tertinggi ternyata tidak selalu sejalan dengan ukuran komunitas.</p>
     </div>
   </div>
 </section>
@@ -162,6 +162,9 @@
         <p>Di <strong>kuadran kanan-bawah</strong> terdapat hub lokal: banyak kolaborator, namun aktivitasnya terkonsentrasi dalam satu komunitas. Di <strong>kuadran kiri-atas</strong> terdapat broker kritis: jumlah kolaborator relatif sedikit, tetapi memegang jalur penting antar-komunitas. Aktor pada kuadran kanan-atas memenuhi kedua peran sekaligus, sehingga paling berdampak bila hilang dari jaringan.</p>
       </div>
     </div>
+    <div class="narrow reveal d2" style="margin-top:30px;padding:0">
+      <p class="callout">Peran ekstrem tetap langka di antara 3.000 peneliti: 245 tergolong hub murni, 243 broker murni, dan hanya 57 yang merangkap keduanya (hub+broker). Sebanyak 136 peneliti berperan sebagai closeness leader dan 17 sebagai node berprestise. Mayoritas, yaitu 2.302 peneliti, tidak menonjol pada metrik sentralitas manapun.</p>
+    </div>
   </div>
 </section>
 
@@ -174,7 +177,7 @@
       <p class="dek">Setiap metrik mendefinisikan “penting” dengan cara yang berbeda. Diagram <em>parallel coordinates</em> berikut menelusuri pergeseran peringkat aktor dari satu metrik ke metrik lain; garis yang naik-turun tajam menandai aktor yang dominan pada satu lensa namun biasa saja pada lensa lainnya.</p>
     </div>
     <div class="figure plush reveal" style="margin-bottom:34px">
-      <div class="fig-head"><p class="fig-title">Pergeseran peringkat antar metrik — 12 aktor teratas <span class="info-btn" data-info="parallel">i</span></p><p class="fig-sub">Tiap garis satu peneliti; sumbu vertikal adalah posisi relatif pada metrik tersebut.</p></div>
+      <div class="fig-head"><p class="fig-title">Pergeseran peringkat antar metrik (12 aktor teratas) <span class="info-btn" data-info="parallel">i</span></p><p class="fig-sub">Tiap garis satu peneliti; sumbu vertikal adalah posisi relatif pada metrik tersebut. Arahkan kursor ke sebuah garis untuk menyorotnya.</p></div>
       <div id="chart-parallel"></div>
     </div>
     <div class="split">
@@ -183,12 +186,12 @@
         <div id="chart-pearson"></div>
       </div>
       <div class="figure reveal d1">
-        <div class="fig-head"><p class="fig-title">Korelasi Spearman <span class="info-btn" data-info="correlation">i</span></p><p class="fig-sub">Hubungan peringkat — lebih tahan terhadap sebaran yang skewed.</p></div>
+        <div class="fig-head"><p class="fig-title">Korelasi Spearman <span class="info-btn" data-info="correlation">i</span></p><p class="fig-sub">Hubungan peringkat, lebih tahan terhadap sebaran yang skewed.</p></div>
         <div id="chart-spearman"></div>
       </div>
     </div>
     <div class="narrow reveal d1" style="margin-top:30px;padding:0">
-      <p class="callout">Metrik sentralitas memiliki sebaran yang sangat <em>skewed</em>: sejumlah kecil hub mendominasi. Perbedaan antara korelasi Pearson dan Spearman justru menjadi temuan tersendiri — pada titik keduanya berbeda, di situlah pengaruh outlier paling terlihat.</p>
+      <p class="callout">Metrik sentralitas memiliki sebaran yang sangat <em>skewed</em>: sejumlah kecil hub mendominasi. Perbedaan antara korelasi Pearson dan Spearman justru menjadi temuan tersendiri, sebab pada titik keduanya berbeda, pengaruh outlier paling terlihat.</p>
     </div>
   </div>
 </section>
@@ -201,12 +204,21 @@
         <p class="kicker">Properti Jaringan</p>
         <h2>Sedikit node yang sangat terhubung</h2>
         <p class="dek">Distribusi derajat jaringan ini bersifat <em>scale-free</em>: mayoritas peneliti memiliki sedikit kolaborator, sementara sejumlah kecil hub memiliki puluhan hingga ratusan.</p>
-        <p>Kami menggunakan <strong>CCDF</strong> (fungsi distribusi kumulatif komplementer) pada skala log-log, yang menjadi standar pengujian power-law (Clauset dkk., 2009). CCDF lebih halus daripada histogram karena tidak terpengaruh <em>noise</em> pada bagian ekor, dan power-law sejati akan tampak sebagai garis lurus. Kemiringan ekor memberikan estimasi eksponen <span class="serif-em">α</span>.</p>
+        <p>Pengujian power-law menggunakan <strong>CCDF</strong> (fungsi distribusi kumulatif komplementer) pada skala log-log, standar yang lazim dipakai untuk uji ini (Clauset dkk., 2009). CCDF lebih halus daripada histogram karena tidak terpengaruh <em>noise</em> pada bagian ekor, dan power-law sejati akan tampak sebagai garis lurus. Kemiringan ekor memberikan estimasi eksponen <span class="serif-em">α</span>.</p>
       </div>
       <div class="figure plush reveal d1">
-        <div class="fig-head"><p class="fig-title">Distribusi derajat — CCDF (log-log) <span class="info-btn" data-info="ccdf">i</span></p><p class="fig-sub">P(K ≥ k): peluang sebuah node punya derajat minimal k. Garis putus-putus = estimasi power-law.</p></div>
+        <div class="fig-head"><p class="fig-title">Distribusi derajat: CCDF (skala log-log) <span class="info-btn" data-info="ccdf">i</span></p><p class="fig-sub">P(K ≥ k): peluang sebuah node punya derajat minimal k. Garis putus-putus = estimasi power-law.</p></div>
         <div id="chart-ccdf"></div>
       </div>
+    </div>
+    <div class="statrow reveal d2" style="margin-top:46px">
+      <div class="cell"><div class="num">0,024</div><div class="lab">Densitas graf<span class="mono">avg. derajat 70,7 dari 2.999 maksimum</span></div></div>
+      <div class="cell"><div class="num">8,55</div><div class="lab">Koefisien small-world (σ)<span class="mono">σ &gt; 1 → struktur small-world</span></div></div>
+      <div class="cell"><div class="num">2,78</div><div class="lab">Rata-rata jarak terpendek (L)<span class="mono">graf acak setara: 2,16</span></div></div>
+      <div class="cell"><div class="num">0,697</div><div class="lab">Modularitas (Q)<span class="mono">komponen terhubung terbesar</span></div></div>
+    </div>
+    <div class="narrow reveal d2" style="margin-top:26px;padding:0">
+      <p class="callout">Koefisien clustering teramati (0,262) jauh melampaui graf acak setara (0,024), sementara rata-rata jarak terpendek tetap pendek. Kombinasi ini menghasilkan σ=8,55, jauh di atas ambang σ=1 yang menandai struktur <em>small-world</em>. Modularitas Q=0,697 pada komponen terhubung terbesar juga jauh melampaui ambang Q=0,3 yang umum dipakai sebagai indikator struktur komunitas yang nyata, bukan kebetulan.</p>
     </div>
   </div>
 </section>
@@ -221,7 +233,7 @@
     </div>
     <div class="method-grid reveal d1">
       <div class="m"><div class="mk">Degree Centrality</div><div class="mt">Seberapa populer</div><p>Jumlah kolaborator langsung. Dihitung eksak untuk seluruh node.</p></div>
-      <div class="m"><div class="mk">Betweenness</div><div class="mt">Seberapa menjembatani</div><p>Frekuensi sebuah node berada pada jalur terpendek antar node lain. Diestimasi dengan algoritma Brandes dari 500 sumber sampel (k=500) — komputasi eksak O(VE) tidak feasibel pada jaringan sepadat ini.</p></div>
+      <div class="m"><div class="mk">Betweenness</div><div class="mt">Seberapa menjembatani</div><p>Frekuensi sebuah node berada pada jalur terpendek antar node lain. Diestimasi dengan algoritma Brandes dari 500 sumber sampel (k=500), karena komputasi eksak O(VE) tidak feasibel pada jaringan sepadat ini.</p></div>
       <div class="m"><div class="mk">Closeness</div><div class="mt">Seberapa dekat</div><p>Kebalikan rata-rata jarak ke node lain. Dihitung eksak (bukan estimasi) untuk seluruh node.</p></div>
       <div class="m"><div class="mk">PageRank</div><div class="mt">Seberapa prestisius</div><p>Pengaruh yang menyebar lewat tetangga berpengaruh. Damping factor α=0,85 (nx.pagerank).</p></div>
     </div>
@@ -230,7 +242,7 @@
         <div class="ic" style="background:#f3d8d8;color:var(--c1-ink)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 8v5M12 16h.01" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.5"/></svg></div>
         <div>
           <div class="dt">Keterbatasan metodologis</div>
-          <div class="dd">Dua hal perlu dibaca dengan hati-hati. Pertama, DBLP XML tidak mendisambiguasi penulis bernama identik tanpa ORCID, sehingga dua peneliti berbeda berpotensi tergabung sebagai satu node. Kedua, betweenness centrality dihitung dengan aproksimasi k=500 node sampel, bukan eksak — peringkat broker papan atas tetap stabil, namun posisi pada ekor distribusi dapat sedikit bergeser.</div>
+          <div class="dd">Tiga hal perlu dibaca dengan hati-hati. Pertama, DBLP XML tidak mendisambiguasi penulis bernama identik tanpa ORCID, sehingga dua peneliti berbeda berpotensi tergabung sebagai satu node. Kedua, betweenness centrality dihitung dengan aproksimasi k=500 node sampel, bukan eksak, sehingga peringkat broker papan atas tetap stabil namun posisi pada ekor distribusi dapat sedikit bergeser. Ketiga, rentang observasi temporal dibatasi mulai tahun 2010, sehingga setiap peneliti yang sudah aktif sebelum tahun itu otomatis tercatat sebagai mulai berkarier pada 2010 (efek <em>left-censoring</em>) dan bukan murni bukti awal karier yang sesungguhnya.</div>
         </div>
       </div>
     </div>
@@ -267,7 +279,7 @@
         </div>
       </div>
     </div>
-    <p class="contrib-note reveal d2">Proyek tugas akhir mata kuliah <strong>Analisis Media Sosial</strong> — eksplorasi, visualisasi, dan analisis jaringan ko-autoran DBLP berbasis DBLP XML dump resmi (2010–2024).</p>
+    <p class="contrib-note reveal d2">Proyek tugas akhir mata kuliah <strong>Analisis Media Sosial</strong>, mencakup eksplorasi, visualisasi, dan analisis jaringan ko-autoran DBLP berbasis DBLP XML dump resmi (2010–2024).</p>
   </div>
 </section>
 
@@ -275,9 +287,9 @@
 <footer class="foot">
   <div class="wrap">
     <h3>Memetakan kolaborasi ilmiah</h3>
-    <p style="max-width:46rem;color:#aeb9c8;margin-top:14px">Proyek mata kuliah <strong style="color:#dde6f0">Analisis Media Sosial</strong> oleh <strong style="color:#dde6f0">Kelompok 10</strong>. Visualisasi &amp; analisis jaringan ko-autoran DBLP (XML dump resmi, 2010–2024) — tiga komunitas terbesar, 1.000 peneliti per komunitas, 106.078 kolaborasi.</p>
+    <p style="max-width:46rem;color:#aeb9c8;margin-top:14px">Proyek mata kuliah <strong style="color:#dde6f0">Analisis Media Sosial</strong> oleh <strong style="color:#dde6f0">Kelompok 10</strong>. Visualisasi dan analisis jaringan ko-autoran DBLP (XML dump resmi, 2010–2024) mencakup tiga komunitas terbesar, 1.000 peneliti per komunitas, dan 106.054 kolaborasi.</p>
     <hr class="divider">
-    <p class="fnote">DATA · DBLP XML dump resmi (dblp.org/xml/), cakupan 2010–2024 — data riil, bukan sintetis<br>METRIK · Degree (eksak), Betweenness (Brandes, k=500 sampel), Closeness (eksak), PageRank (α=0,85) · korelasi Pearson &amp; Spearman<br>TIM · Kelompok 10 — Almira Faradhita Alifah, Arkhan Falih Fahrie Puspita, Keisha Hernantya Zahra<br>PERBARUI DATA · jalankan ulang pipeline notebook lalu timpa <code style="color:#9fc0ea">docs/data/network.json</code> dengan skema yang sama</p>
+    <p class="fnote">DATA · DBLP XML dump resmi (dblp.org/xml/), cakupan 2010–2024, 3.000 peneliti, 106.054 kolaborasi, densitas 0,0236 (data riil, bukan sintetis)<br>METRIK · Degree (eksak), Betweenness (Brandes, k=500 sampel), Closeness (eksak), PageRank (α=0,85) · korelasi Pearson &amp; Spearman<br>STRUKTUR · small-world (σ=8,55), modularitas Q=0,697 pada komponen terhubung terbesar<br>TIM · Kelompok 10: Almira Faradhita Alifah, Arkhan Falih Fahrie Puspita, Keisha Hernantya Zahra<br>PERBARUI DATA · jalankan ulang pipeline notebook lalu timpa <code style="color:#9fc0ea">docs/data/network.json</code> dengan skema yang sama</p>
   </div>
 </footer>
 

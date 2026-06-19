@@ -42,13 +42,13 @@
 
   // ---------- INFO POPOVERS ----------
   const INFO_TEXT={
-    'graph': '<p class="ip-title">Mengapa graf node-link?</p><p>Graf node-link secara natural merepresentasikan jaringan sosial — titik = aktor, garis = relasi. Layout <em>force-directed</em> memposisikan node terhubung berdekatan sehingga kluster komunitas terungkap secara organik tanpa harus menentukan posisi manual.</p>',
+    'graph': '<p class="ip-title">Mengapa graf node-link?</p><p>Graf node-link secara natural merepresentasikan jaringan sosial: titik sebagai aktor, garis sebagai relasi. Layout <em>force-directed</em> memposisikan node terhubung berdekatan sehingga kluster komunitas terungkap secara organik tanpa harus menentukan posisi manual.</p>',
     'size-bar': '<p class="ip-title">Mengapa bar chart?</p><p>Untuk membandingkan magnitudo antar kategori, panjang bar adalah encoding paling akurat secara persepsi (Cleveland &amp; McGill, 1984). Pembaca langsung menangkap perbandingan ukuran relatif tiap komunitas.</p>',
-    'profile-heatmap': '<p class="ip-title">Mengapa heatmap?</p><p>Data berbentuk matriks (metrik × komunitas). Heatmap memetakan nilai ke intensitas warna sehingga pola "komunitas mana paling sentral di metrik apa" langsung terbaca dalam satu grid — lebih ringkas daripada beberapa bar chart terpisah.</p>',
-    'leaderboard': '<p class="ip-title">Mengapa stacked horizontal bar?</p><p>Bar horizontal memudahkan membaca label nama yang panjang. <em>Stacking</em> komponen ternormalisasi (DC/BC/CC/PR) menjawab bukan hanya "siapa peringkat 1" tapi "mengapa" — apakah ia kuat karena populer, broker, atau merata.</p>',
+    'profile-heatmap': '<p class="ip-title">Mengapa heatmap?</p><p>Data berbentuk matriks (metrik × komunitas). Heatmap memetakan nilai ke intensitas warna sehingga pola "komunitas mana paling sentral di metrik apa" langsung terbaca dalam satu grid, lebih ringkas daripada beberapa bar chart terpisah.</p>',
+    'leaderboard': '<p class="ip-title">Mengapa stacked horizontal bar?</p><p>Bar horizontal memudahkan membaca label nama yang panjang. <em>Stacking</em> komponen ternormalisasi (DC/BC/CC/PR) menjawab bukan hanya "siapa peringkat 1" tapi juga "mengapa", apakah aktor tersebut kuat karena populer, karena berperan sebagai broker, atau karena merata di semua metrik.</p>',
     'scatter': '<p class="ip-title">Mengapa scatter plot?</p><p>Pertanyaan "populer = penghubung?" adalah relasi dua variabel kontinu. Scatter mengungkap pola sebaran: node di kuadran berbeda menunjukkan peran berbeda (hub lokal vs broker murni vs keduanya).</p>',
-    'parallel': '<p class="ip-title">Mengapa parallel coordinates?</p><p>Untuk membandingkan empat metrik pada entitas yang sama, scatter hanya menampung 2 sumbu. Parallel coordinates menempatkan tiap metrik sebagai sumbu vertikal — garis naik-turun menunjukkan aktor dominan di satu metrik namun biasa di metrik lain.</p>',
-    'correlation': '<p class="ip-title">Mengapa heatmap korelasi?</p><p>Matriks simetris paling efisien divisualisasikan sebagai grid warna. Menampilkan Pearson (linear) dan Spearman (peringkat) berdampingan mengungkap di mana <em>outlier</em> mendistorsi hubungan — perbedaan keduanya sendiri menjadi temuan.</p>',
+    'parallel': '<p class="ip-title">Mengapa parallel coordinates?</p><p>Untuk membandingkan empat metrik pada entitas yang sama, scatter hanya menampung 2 sumbu. Parallel coordinates menempatkan tiap metrik sebagai sumbu vertikal, sehingga garis naik-turun menunjukkan aktor yang dominan di satu metrik namun biasa saja di metrik lain.</p>',
+    'correlation': '<p class="ip-title">Mengapa heatmap korelasi?</p><p>Matriks simetris paling efisien divisualisasikan sebagai grid warna. Menampilkan Pearson (linear) dan Spearman (peringkat) berdampingan mengungkap titik di mana <em>outlier</em> mendistorsi hubungan, perbedaan keduanya sendiri menjadi temuan.</p>',
     'ccdf': '<p class="ip-title">Mengapa CCDF log-log?</p><p>CCDF (fungsi distribusi kumulatif komplementer) pada skala log-log adalah standar uji power-law (Clauset dkk., 2009). Lebih halus dari histogram karena tidak terganggu <em>binning noise</em> di ekor, dan power-law sejati tampak sebagai garis lurus.</p>'
   };
   let openPopover=null;
@@ -129,7 +129,7 @@
     const dark=document.documentElement.classList.contains('dark');
     const ci=dark?['#8dbde6','#e8b0b0','#b5afe0']:['#2f5e93','#b25a5a','#5d559a'];
     const cc=dark?['#6ba0d8','#e09e9e','#9d96d0']:['#5b8fc9','#d98a8a','#8a82c0'];
-    const desc=['Inti yang sangat padat (highly-dense core): beberapa super-hub mengikat banyak simpul kecil di sekelilingnya — budaya kolaborasi kelompok riset besar dan multipihak.','Struktur desentralisasi: tidak ada simpul dominan tunggal, terpecah jadi banyak sub-klaster yang dihubungkan jembatan kolaborasi tipis — derajat rata-rata jauh lebih rendah dari A dan C.','Mesh kolaborasi paling padat dan merata — hampir seluruh anggota saling terhubung tanpa bergantung pada satu atau dua tokoh sentral saja.'];
+    const desc=['Inti yang sangat padat (highly-dense core): beberapa super-hub mengikat banyak simpul kecil di sekelilingnya, mencerminkan budaya kolaborasi kelompok riset besar dan multipihak.','Struktur desentralisasi: tidak ada simpul dominan tunggal, terpecah menjadi banyak sub-klaster yang dihubungkan jembatan kolaborasi tipis, dengan derajat rata-rata jauh lebih rendah daripada Komunitas A dan C.','Mesh kolaborasi paling padat dan merata, hampir seluruh anggota saling terhubung tanpa bergantung pada satu atau dua tokoh sentral saja.'];
     wrap.innerHTML=DATA.profile.map((p,i)=>`
       <div class="comm-card">
         <div class="bar" style="background:${cc[i]}"></div>
@@ -197,7 +197,7 @@
   // ---------- boot ----------
   fetch('data/network.json').then(r=>r.json()).then(data=>{
     DATA=data;
-    initHeroGraph(document.getElementById('hero-canvas'), DATA);
+    initHeroGraph(document.getElementById('hero-canvas'));
     buildCommCards();
     registerCharts();
     refreshReveals(); tick();

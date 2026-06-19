@@ -134,11 +134,15 @@
   };
 
   // ---- 5. PARALLEL COORDINATES ----
+  // Redesigned for comfortable hover: a wide invisible hit-stroke under each
+  // thin visible line (so the cursor doesn't need pixel precision), a smooth
+  // curve instead of sharp zigzags, and a persistent name label on the left
+  // so identities are readable without hovering at all.
   window.parallelCoords = function(sel, data){
     const t=T();
     const dims=[{k:'degN',l:'Degree'},{k:'bcN',l:'Betweenness'},{k:'ccN',l:'Closeness'},{k:'prN',l:'PageRank'}];
     const top=[...data.nodes].sort((a,b)=>b.comp-a.comp).slice(0,12);
-    const w=620,h=380,m={t:34,r:90,b:24,l:90};
+    const w=660,h=420,m={t:34,r:50,b:24,l:148};
     const s=svg(sel,w,h);
     const xScale=d3.scalePoint().domain(dims.map(d=>d.l)).range([m.l,w-m.r]);
     const yByDim={};
@@ -149,16 +153,52 @@
       s.append('text').attr('x',gx).attr('y',m.t-14).attr('text-anchor','middle').style('font-family',"ui-monospace,monospace").style('font-size','11px').style('letter-spacing','0.04em').style('fill',t.body).text(d.l);
       ['Tinggi','Rendah'].forEach((lab,i)=>s.append('text').attr('x',gx).attr('y',i===0?m.t+4:h-m.b+14).attr('text-anchor','middle').style('font-family',"ui-monospace,monospace").style('font-size','9px').style('fill',t.faint).text(lab));
     });
-    const line=d3.line();
-    top.forEach((d,i)=>{
+
+    // declutter label y-positions so overlapping scores don't collide
+    const rows=top.map(d=>({ d, y: yByDim.degN(d.degN) })).sort((a,b)=>a.y-b.y);
+    const minGap=15;
+    for(let i=1;i<rows.length;i++){ if(rows[i].y-rows[i-1].y<minGap) rows[i].y=rows[i-1].y+minGap; }
+    for(let i=rows.length-2;i>=0;i--){ if(rows[i+1].y-rows[i].y<minGap) rows[i].y=rows[i+1].y-minGap; }
+
+    const line=d3.line().curve(d3.curveCatmullRom.alpha(0.6));
+    const groups=top.map((d,i)=>{
       const pts=dims.map(dim=>[xScale(dim.l), yByDim[dim.k](d[dim.k])]);
-      const path=s.append('path').attr('d',line(pts)).attr('fill','none').attr('stroke',t.c[d.comm]).attr('stroke-width',1.6).attr('opacity',t.dark?0.6:0.5).style('cursor','pointer');
+      const g=s.append('g').style('cursor','pointer');
+      // wide invisible stroke: generous hover target without a visually thick line
+      const hit=g.append('path').attr('d',line(pts)).attr('fill','none').attr('stroke','transparent').attr('stroke-width',16);
+      const path=g.append('path').attr('d',line(pts)).attr('fill','none').attr('stroke',t.c[d.comm]).attr('stroke-width',1.8).attr('opacity',t.dark?0.62:0.5);
       const len=path.node().getTotalLength();
       path.attr('stroke-dasharray',len).attr('stroke-dashoffset',len).transition().duration(900).delay(i*60).attr('stroke-dashoffset',0);
-      path.on('mouseover',function(ev){ d3.select(this).attr('opacity',1).attr('stroke-width',3).raise(); moveTip(`<div class="t-name">${d.name}</div><div class="t-comm" style="color:${t.c[d.comm]}">${data.communities[d.comm].short}</div>`+dims.map(dm=>`<div class="t-row"><span>${dm.l}</span><b>${d[dm.k].toFixed(2)}</b></div>`).join(''),ev); })
-        .on('mousemove',ev=>moveTip(tip().innerHTML,ev))
-        .on('mouseout',function(){ d3.select(this).attr('opacity',t.dark?0.6:0.5).attr('stroke-width',1.6); hideTip(); });
-      pts.forEach(p=>s.append('circle').attr('cx',p[0]).attr('cy',p[1]).attr('r',2.5).attr('fill',t.c[d.comm]).attr('opacity',0.7).style('pointer-events','none'));
+      pts.forEach(p=>g.append('circle').attr('cx',p[0]).attr('cy',p[1]).attr('r',2.6).attr('fill',t.c[d.comm]).attr('opacity',0.75).style('pointer-events','none'));
+      return {d,g,path,pts};
+    });
+    const labelRowOf=new Map(rows.map(r=>[r.d,r.y]));
+    top.forEach((d,i)=>{
+      const ly=labelRowOf.get(d);
+      const lx=xScale('Degree')-14;
+      s.append('text').attr('x',lx).attr('y',ly).attr('dy','0.32em').attr('text-anchor','end')
+        .style('font-family',"'Helvetica Neue',Arial").style('font-size','11.5px').style('font-weight','600')
+        .style('fill',t.ci[d.comm]).style('opacity',0).style('pointer-events','none').text(d.name)
+        .transition().delay(500+i*60).duration(400).style('opacity',1);
+    });
+
+    function focusOn(i){
+      groups.forEach((grp,j)=>{
+        const on=j===i;
+        grp.path.interrupt().transition().duration(150).attr('opacity', on?1:(t.dark?0.62:0.5)*0.18).attr('stroke-width', on?3:1.8);
+        if(on) grp.g.raise();
+      });
+    }
+    function clearFocus(){
+      groups.forEach(grp=>{ grp.path.interrupt().transition().duration(150).attr('opacity',t.dark?0.62:0.5).attr('stroke-width',1.8); });
+    }
+    groups.forEach((grp,i)=>{
+      const d=grp.d;
+      grp.g.on('mouseover',function(ev){
+        focusOn(i);
+        moveTip(`<div class="t-name">${d.name}</div><div class="t-comm" style="color:${t.c[d.comm]}">${data.communities[d.comm].short}</div>`+dims.map(dm=>`<div class="t-row"><span>${dm.l}</span><b>${d[dm.k].toFixed(2)}</b></div>`).join(''),ev);
+      }).on('mousemove',ev=>moveTip(tip().innerHTML,ev))
+        .on('mouseout',function(){ clearFocus(); hideTip(); });
     });
   };
 

@@ -2,9 +2,9 @@
   "name": "dblp-sna-kelompok10",
   "version": "1.0.0",
   "private": true,
-  "description": "Visual essay analisis jaringan ko-autoran DBLP — Kelompok 10",
+  "description": "Visual essay analisis jaringan ko-autoran DBLP, Kelompok 10",
   "scripts": {
-    "start": "serve -s public -l ${PORT:-3000}"
+    "start": "serve -s docs -l ${PORT:-3000}"
   },
   "dependencies": {
     "serve": "^14.2.3"

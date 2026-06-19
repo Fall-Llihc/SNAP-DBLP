@@ -3,12 +3,15 @@
    Used by: hero (ambient) + interactive exploration section
    ============================================================ */
 (function(){
-  // Theme-aware color readers
+  // Theme-aware color readers. Dark-mode community B (coral) is boosted a few
+  // shades brighter than its light-mode counterpart: at the same lightness it
+  // reads as a dull grey-pink against the near-black canvas, especially in the
+  // "Semua komunitas" overview where it sits next to the brighter blue/violet.
   function isDark(){ return document.documentElement.classList.contains('dark'); }
-  function ccol(){ return isDark() ? ['#6ba0d8','#e09e9e','#9d96d0'] : ['#5b8fc9','#d98a8a','#8a82c0']; }
-  function cink(){ return isDark() ? ['#8dbde6','#e8b0b0','#b5afe0'] : ['#2f5e93','#b25a5a','#5d559a']; }
+  function ccol(){ return isDark() ? ['#6ba0d8','#f0a08c','#a89ee0'] : ['#5b8fc9','#d98a8a','#8a82c0']; }
+  function cink(){ return isDark() ? ['#8dbde6','#f5b8a4','#c0b8ec'] : ['#2f5e93','#b25a5a','#5d559a']; }
   function edgeColor(cross, alpha){
-    if(isDark()) return cross ? `rgba(100,120,160,${alpha})` : `rgba(80,95,130,${alpha})`;
+    if(isDark()) return cross ? `rgba(126,150,196,${alpha})` : `rgba(102,120,160,${alpha})`;
     return cross ? `rgba(120,130,150,${alpha})` : `rgba(140,150,168,${alpha})`;
   }
   function labelBg(){ return isDark() ? 'rgba(17,24,39,0.85)' : 'rgba(255,255,255,0.85)'; }
@@ -37,12 +40,53 @@
       .force('center', d3.forceCenter(w*0.5, h*0.5).strength(0.02));
   }
 
-  // ---- HERO: ambient, non-interactive, slow drift ----
-  window.initHeroGraph = function(canvas, data){
+  // ---- seeded PRNG (mulberry32) so the decorative hero scene is stable across reloads ----
+  function mulberry32(seed){
+    return function(){
+      seed |= 0; seed = (seed + 0x6D2B79F5) | 0;
+      let t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
+      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+
+  // ---- HERO: ambient, non-interactive, decorative network ----
+  // Deliberately NOT the real 3.000-node dataset: a force layout over the
+  // actual graph looks cluttered at hero scale and is wasted weight for a
+  // purely atmospheric background. This generates a small synthetic
+  // "constellation" instead (seed=42, matching the analysis's reproducibility
+  // seed) with three clusters sized and shaped to echo the real findings:
+  // communities A and C are dense, B is comparatively sparse, with a handful
+  // of cross-community bridges standing in for brokers.
+  window.initHeroGraph = function(canvas){
     const ctx = canvas.getContext('2d');
     let W,H,dpr;
-    const nodes = data.graph.nodes.map(n=>({...n, r: 1.6 + Math.sqrt(n.deg)*0.62}));
-    const links = sampleEdges(data.graph.edges).map(e=>({source:e[0],target:e[1],cross:e[2]===1}));
+    const rnd = mulberry32(42);
+    const CLUSTERS = [
+      {comm:0, n:72, density:0.15, cx:0.30, cy:0.56, spread:0.17},
+      {comm:1, n:44, density:0.045, cx:0.63, cy:0.20, spread:0.13},
+      {comm:2, n:80, density:0.14, cx:0.75, cy:0.58, spread:0.19},
+    ];
+    const nodes=[], links=[];
+    CLUSTERS.forEach(cl=>{
+      const start=nodes.length;
+      for(let i=0;i<cl.n;i++){
+        nodes.push({ id:nodes.length, comm:cl.comm, tx:cl.cx, ty:cl.cy, r: 1.8 + rnd()*3.4 });
+      }
+      for(let i=start;i<nodes.length;i++){
+        for(let j=i+1;j<nodes.length;j++){
+          if(rnd()<cl.density) links.push({source:i, target:j, cross:false});
+        }
+      }
+    });
+    // a handful of cross-cluster bridge edges, echoing the broker role
+    const bridgePairs=[[0,1],[1,2],[2,0],[0,1],[1,2],[2,0],[0,2]];
+    bridgePairs.forEach(([ca,cb],k)=>{
+      const A=CLUSTERS[ca], B=CLUSTERS[cb];
+      const aStart=CLUSTERS.slice(0,ca).reduce((s,c)=>s+c.n,0);
+      const bStart=CLUSTERS.slice(0,cb).reduce((s,c)=>s+c.n,0);
+      links.push({ source: aStart + Math.floor(rnd()*A.n), target: bStart + Math.floor(rnd()*B.n), cross:true });
+    });
 
     function resize(){
       dpr = Math.min(window.devicePixelRatio||1, 2);
@@ -51,22 +95,29 @@
       ctx.setTransform(dpr,0,0,dpr,0,0);
     }
     resize();
-    const sim = buildSim(nodes, links, W, H, false).alpha(0.9).alphaDecay(0.012);
+
+    function buildHeroSim(){
+      return d3.forceSimulation(nodes)
+        .force('link', d3.forceLink(links).id(d=>d.id).distance(l=> l.cross? 130:34).strength(l=> l.cross?0.04:0.1))
+        .force('charge', d3.forceManyBody().strength(-16).distanceMax(140))
+        .force('x', d3.forceX(d=> d.tx*W).strength(0.055))
+        .force('y', d3.forceY(d=> d.ty*H).strength(0.055))
+        .force('collide', d3.forceCollide(d=> d.r+2).strength(0.7));
+    }
+    const sim = buildHeroSim().alpha(0.9).alphaDecay(0.014);
     sim.stop();
     // pre-settle synchronously so a static layout renders even if rAF is throttled
-    for(let i=0;i<160;i++) sim.tick();
+    for(let i=0;i<180;i++) sim.tick();
 
     function draw(){
       ctx.clearRect(0,0,W,H);
-      // edges
       const CC=ccol();
-      ctx.lineWidth = 0.6;
+      ctx.lineWidth = 0.7;
       for(const l of links){
         const s=l.source, t=l.target;
-        ctx.strokeStyle = edgeColor(l.cross, l.cross?0.16:0.10);
+        ctx.strokeStyle = edgeColor(l.cross, l.cross?0.20:0.13);
         ctx.beginPath(); ctx.moveTo(s.x,s.y); ctx.lineTo(t.x,t.y); ctx.stroke();
       }
-      // nodes
       for(const n of nodes){
         ctx.beginPath(); ctx.arc(n.x,n.y,n.r,0,6.2832);
         ctx.fillStyle = CC[n.comm]; ctx.globalAlpha = 0.85;
@@ -78,9 +129,14 @@
     draw(); // render the pre-settled layout immediately
     // gentle perpetual drift
     let raf;
-    function breathe(){ sim.alphaTarget(0.012); raf=requestAnimationFrame(breathe); }
+    function breathe(){ sim.alphaTarget(0.01); raf=requestAnimationFrame(breathe); }
     setTimeout(()=>{ sim.alphaTarget(0); sim.restart(); breathe(); }, 3500);
-    window.addEventListener('resize', ()=>{ resize(); sim.force('center', d3.forceCenter(W*0.5,H*0.5).strength(0.02)); sim.force('x', d3.forceX(d=> W*0.5 + (d.comm===0?-1:d.comm===2?1:0)*W*0.20).strength(0.045)); sim.force('y', d3.forceY(d=> H*0.5 + (d.comm===1?-1:0.4)*H*0.16).strength(0.045)); sim.alpha(0.4).restart(); });
+    window.addEventListener('resize', ()=>{
+      resize();
+      sim.force('x', d3.forceX(d=> d.tx*W).strength(0.055));
+      sim.force('y', d3.forceY(d=> d.ty*H).strength(0.055));
+      sim.alpha(0.4).restart();
+    });
     return sim;
   };
 
@@ -100,7 +156,16 @@
     let W,H,dpr;
 
     const allEdges = data.graph.edges;
-    const allNodes = data.graph.nodes.map(n=>({...n, r: 2.2 + Math.sqrt(n.deg)*0.78}));
+    // Node radius depends on which view is active. With all three communities
+    // shown at once, sizing strictly by degree produces a few huge circles
+    // next to a sea of tiny ones, which reads as noisy rather than informative
+    // at this density. The overview keeps radii nearly uniform (small range);
+    // focusing a single community re-introduces degree as a visible size cue,
+    // since there the canvas has room to show who the local hubs are.
+    function nodeRadius(deg, solo){
+      return solo ? 2.6 + Math.sqrt(deg)*0.92 : 2.6 + Math.min(Math.sqrt(deg), 9)*0.5;
+    }
+    const allNodes = data.graph.nodes.map(n=>({...n, r: nodeRadius(n.deg, false)}));
 
     let nodes = allNodes, links = [];
     let sim = null;
@@ -192,9 +257,10 @@
     // animate=true  -> live d3 transition (used on filter changes, feels responsive).
     function rebuild(animate){
       if(sim) sim.stop();
-      nodes = allNodes.filter(n=>activeComm.has(n.comm));
-      links = buildLinksFor(nodes);
       const solo = activeComm.size===1;
+      nodes = allNodes.filter(n=>activeComm.has(n.comm));
+      for(const n of nodes) n.r = nodeRadius(n.deg, solo);
+      links = buildLinksFor(nodes);
       sim = buildSim(nodes, links, W, H, solo);
       if(animate){
         sim.alpha(0.9).alphaDecay(solo?0.022:0.018);
