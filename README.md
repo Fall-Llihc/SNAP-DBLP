@@ -66,7 +66,7 @@
 | **Web Visualisasi** | https://fall-llihc.github.io/SNAP-DBLP |
 | **Repository** | https://github.com/Fall-Llihc/SNAP-DBLP |
 
-> Deploy via GitHub Pages dengan source `main → /docs`. Aktifkan di **Settings → Pages**.
+> Situs dideploy langsung dari folder `docs/` lewat GitHub Pages. Lihat bagian [☁️ Deployment](#-deployment) untuk konfigurasi lengkap.
 
 ---
 
