@@ -1,7 +1,6 @@
-<h1 align="center">🕸️ DBLP SNA Explorer</h1>
+<h1 align="center">🕸️ Memetakan Kolaborasi Ilmiah lewat Jaringan Ko-Autoran DBLP</h1>
 
 <p align="center">
-  <strong>Memetakan kolaborasi ilmiah lewat jaringan ko-autoran DBLP.</strong><br>
   Visual essay interaktif — <b>3.000 peneliti</b>, <b>106.054 kolaborasi</b>, <b>3 komunitas riset terbesar</b>.
 </p>
 
@@ -37,36 +36,6 @@
 | Keisha Hernantya Zahra | 103052330063 |
 
 </div>
-
----
-
-## Daftar Isi
-
-- [🌐 Live Demo](#-live-demo)
-- [🎨 Preview Visualisasi](#-preview-visualisasi)
-- [✨ Fitur Utama](#-fitur-utama)
-- [🧰 Tech Stack](#-tech-stack)
-- [📊 Dataset](#-dataset)
-- [🔍 Pertanyaan yang Dijawab](#-pertanyaan-yang-dijawab)
-- [🎯 Highlights & Temuan Kunci](#-highlights--temuan-kunci)
-- [🏆 Top-10 Aktor Sentral](#-top-10-aktor-sentral)
-- [🧪 Pipeline & Metodologi](#-pipeline--metodologi)
-- [📈 Galeri Analisis](#-galeri-analisis)
-- [📁 Struktur Direktori](#-struktur-direktori)
-- [🚀 Cara Menjalankan Lokal](#-cara-menjalankan-lokal)
-- [☁️ Deployment](#-deployment)
-- [📚 Referensi](#-referensi)
-
----
-
-## 🌐 Live Demo
-
-| URL | Keterangan |
-|---|---|
-| **Web Visualisasi** | https://fall-llihc.github.io/SNAP-DBLP |
-| **Repository** | https://github.com/Fall-Llihc/SNAP-DBLP |
-
-> Situs dideploy langsung dari folder `docs/` lewat GitHub Pages. Lihat bagian [☁️ Deployment](#-deployment) untuk konfigurasi lengkap.
 
 ---
 
@@ -335,30 +304,6 @@ Hanya jika ingin men-trigger ulang pipeline dari GEXF mentah:
 pip install -r scripts/requirements.txt
 python scripts/build_network_json.py raw/your-graph.gexf docs/data/network.json
 ```
-
----
-
-## ☁️ Deployment
-
-Tiga opsi gratis tanpa kartu kredit:
-
-<table>
-<tr><th>Platform</th><th>Konfigurasi</th></tr>
-<tr>
-  <td><b>🐙 GitHub Pages</b><br><sub>termudah</sub></td>
-  <td>Settings → Pages → Source: <code>Deploy from branch</code> → Branch: <code>main</code> · folder: <code>/docs</code></td>
-</tr>
-<tr>
-  <td><b>▲ Vercel</b></td>
-  <td>Import repo → Framework: <code>Other</code> · Root: <code>docs</code> · Build command: <em>(kosongkan)</em></td>
-</tr>
-<tr>
-  <td><b>⚡ Cloudflare Pages</b></td>
-  <td>Connect to Git → Build command: <em>(kosongkan)</em> · Build output: <code>docs</code></td>
-</tr>
-</table>
-
-> Karena seluruh data dimuat lewat *relative path* (`data/network.json`), tidak ada *environment variable* yang perlu diset.
 
 ---
 
